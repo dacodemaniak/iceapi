@@ -24,22 +24,24 @@ class DefaultController extends Controller
         $jsonDatas = [];
         
         foreach($quotations as $quotation){
-        	$jsonDatas[] = [
-        		"id" => $quotation->getId(),
-        		"date" => $quotation->getDate(),
-        		"infos" => $this->_humanize($quotation->getUserInfos())
-        	];
+        	$user = null;
+        	$feature = null;
+        	
+        	$user = UserInfo::getUserInfo($quotation->getUserInfos());
+        	
+        	if($user->isChecked()){
+        		$feature = FeatureInfo::getFeatureInfo($quotation->getText());
+        		if($feature->isChecked()){
+        			$jsonDatas[] = [
+        					"id" => $quotation->getId(),
+        					"date" => $quotation->getDate(),
+        					"user" => $user->toArray(),
+        					"features" => $feature->toArray()
+        			];
+        		}
+        	}
         }
         
         return new JsonResponse($jsonDatas);
-    }
-    
-    /**
-     * Retourne les données désérialisées
-     * @param string $serializedData
-     * @return mixed
-     */
-    private function _humanize(string $serializedData){
-    	return unserialize($serializedData);
     }
 }
